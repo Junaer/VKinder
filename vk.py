@@ -1,6 +1,7 @@
 import vk_api
 import time
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from random import randrange
 
 
@@ -12,8 +13,20 @@ vk = vk_api.VkApi(token=token)
 longpoll = VkLongPoll(vk)
 
 
-def write_msg(user_id, message):
-    vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7),})
+def write_msg(user_id, message, keyboard=None):
+    post = {
+        'user_id': user_id,
+        'message': message,
+        'random_id': randrange(10 ** 7),
+        'keyboard': keyboard.get_keyboard()
+        }
+
+    if keyboard != None:
+        post["keyboard"] = keyboard.get_keyboard()
+    else:
+        post = post
+
+    vk.method('messages.send', post)
 
 def chat():
     # Получаем id пользователя
@@ -25,18 +38,24 @@ def chat():
 
                 if request.lower() == "привет":
                     person = event.user_id
-                    write_msg(event.user_id, "Напишите 'начать' для запуска приложения")
+                    keybord = VkKeyboard(one_time=True)
+                    keybord.add_button('Начать', VkKeyboardColor.SECONDARY)
+                    write_msg(event.user_id, "Нажмите на кнопку 'начать'", keybord)
                     return person
                 elif request.lower() == "найти пару":
                     person = event.user_id
-                    write_msg(event.user_id, "Напишите 'начать' для запуска приложения")
+                    keybord = VkKeyboard(one_time=True)
+                    keybord.add_button('Начать', VkKeyboardColor.SECONDARY)
+                    write_msg(event.user_id, "Нажмите на кнопку 'начать'", keybord)
                     return person
                 elif request.lower() == "пока":
                     write_msg(event.user_id, "Пока((")
                     break
                 else:
                     person = event.user_id
-                    write_msg(event.user_id, "Напишите 'начать' для запуска приложения")
+                    keybord = VkKeyboard(one_time=True)
+                    keybord.add_button('Начать', VkKeyboardColor.SECONDARY)
+                    write_msg(event.user_id, "Нажмите на кнопку 'начать'", keybord)
                     return person
 
 
@@ -68,21 +87,12 @@ def user_information():
                 request = event.text
 
                 if request.lower() == "начать":
-                    write_msg(event.user_id, f"Поиск будет происходить по этим критериям {part}, Возраст от {age-3} до {age+3}, город {city_person[0]['city']['title']} - для продолжения напишите 'Да'")
+                    keybord = VkKeyboard(one_time=True)
+                    keybord.add_button('Дальше', VkKeyboardColor.SECONDARY)
+                    write_msg(event.user_id, f"Поиск будет происходить по этим критериям {part}, Возраст от {age-3} до {age+3}, город {city_person[0]['city']['title']}.", keybord)
                     return [sex, age, city_person[0]['city']['id']]
 
-def reter(func):
-    man = func
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
 
-            if event.to_me:
-                request = event.text
-
-                if request.lower() == 'да':
-                    write_msg(event.user_id, f"{man[0]},{man[1]} {man[2]}")
-                else:
-                    write_msg(event.user_id, f"Напишите 'Да'")
 
 
 
