@@ -28,7 +28,7 @@ class VKclass:
                 if event.object['payload']['type'] == 'like':
                     return {
                         'user_id': event.object['user_id'],
-                        'text': 'Список "Вах"!',
+                        'text': 'Список Лайк!',
                         'type': 'LIKE_LIST',
                     }
                 if event.object['payload']['type'] == 'new':
@@ -134,6 +134,7 @@ class VKclass:
                 'id': photo['id'],
                 'user_id': photo['owner_id'],
                 'likes': photo['likes']['count'],
+                'url_photo': photo['sizes'][-1]['url'],
                 'like': photo['likes']['user_likes']
             } for photo in user_photos['items']]
             photo_list = sorted(photo_list, key=lambda p: p['likes'], reverse=True)[:3]
